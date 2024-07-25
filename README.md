@@ -119,7 +119,7 @@ export CheckoutProcess {
  Класс PaymentForm 
 
  Это класс для отображения формы оформления заказа с информацией о способе оплаты и содержит следующие свойства
- export type PaymentType =
+ export type PaymentForm =
   | 'online'
   | 'cash'
 
