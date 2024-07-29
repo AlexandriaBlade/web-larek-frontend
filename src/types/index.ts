@@ -5,7 +5,7 @@ export type CategoryType =
   | 'кнопка'
   | 'хард-скил';
 
-export interface ItemCard {
+export interface IProductItem {
     id: string;
     category: CategoryType;
     description: string;
@@ -14,14 +14,14 @@ export interface ItemCard {
     image: string;    
   }
 
-export  type PaymentForm =
+export  type PaymentType =
   | 'online'
   | 'cash';  
 
 
-export interface CheckoutProcess {
+export interface IOrder {
     items: string[];
-    payment: PaymentForm;
+    payment: PaymentType;
     total: number;
 	  address: string;
 	  email: string;
@@ -29,20 +29,21 @@ export interface CheckoutProcess {
 }
 
 export interface IAppData {
-	products: ItemCard[];
-  basket: ItemCard[];
-  order: CheckoutProcess;
+	products: IProductItem[];
+  basket: IProductItem[];
+  order: IOrder;
 }
 
-export type  TProduct = Omit<ItemCard, "description">
+export type  TProduct = Omit<IProductItem, "description">
 
-export type  TBasketProduct = Pick<ItemCard, "id" | "title" | "price">
+export type  TBasketProduct = Pick<IProductItem, "id" | "title" | "price">
 
 export type IOrderForm = Pick<IOrder, 'payment' | 'address' | 'email' | 'phone'>;
 
 export type FormErrors = Partial<Record<keyof IOrderForm, string>>;
 
-export interface Confirmation {
+export interface IOrderResult {
   id: string; 
   total: number;
 }
+  
