@@ -1,58 +1,47 @@
-import { Component } from './base/Component';
-import { IEvents } from './base/events';
-import { ensureElement } from '../utils/utils';
+import { Component } from "./base/Component"; // Импорт базового класса Component
+import { IEvents, IPage } from "../types"; // Импорт интерфейсов событий и страницы
+import { ensureElement } from "../utils/utils"; // Импорт утилиты для проверки наличия элементов
 
-/*
-  * Интерфейс описывающий страницу
-  * */
-interface IPage {
-  // Счётчик товаров в корзине
-  counter: number;
-
-  // Массив карточек с товарами
-  store: HTMLElement[];
-
-  // Переключатель для блокировки
-  // Отключает прокрутку страницы
-  locked: boolean;
-}
-
-/*
-  * Класс, описывающий главную страницу
-  * */
+// Класс Page наследуется от Component и представляет собой страницу
 export class Page extends Component<IPage> {
-  // Ссылки на внутренние элементы
-  protected _counter: HTMLElement;
-  protected _store: HTMLElement;
-  protected _wrapper: HTMLElement;
-  protected _basket: HTMLElement;
+  // Элементы, представляющие различные части страницы
+  protected _counter: HTMLElement; // Счетчик корзины
+  protected _catalog: HTMLElement; // Каталог товаров
+  protected _wrapper: HTMLElement; // Обертка для страницы
+  protected _basket: HTMLElement; // Корзина
 
-  // Конструктор принимает родительский элемент и обработчик событий
+  // Конструктор класса, принимает контейнер и события
   constructor(container: HTMLElement, protected events: IEvents) {
-    super(container);
+    super(container); // Вызываем конструктор родительского класса
 
-    this._counter = ensureElement<HTMLElement>('.header__basket-counter');
-    this._store = ensureElement<HTMLElement>('.gallery');
-    this._wrapper = ensureElement<HTMLElement>('.page__wrapper');
-    this._basket = ensureElement<HTMLElement>('.header__basket');
+    // Получаем ссылки на необходимые элементы страницы
+    this._counter = ensureElement<HTMLElement>('.header__basket-counter'); // Счетчик корзины в шапке
+    this._catalog = ensureElement<HTMLElement>('.gallery'); // Галерея товаров
+    this._wrapper = ensureElement<HTMLElement>('.page__wrapper'); // Обертка страницы
+    this._basket = ensureElement<HTMLElement>('.header__basket'); // Корзина в шапке
 
+    // Добавляем обработчик события для открытия корзины при клике на элемент корзины
     this._basket.addEventListener('click', () => {
-      this.events.emit('basket:open');
+      this.events.emit('basket:open'); // Генерируем событие открытия корзины
     });
   }
 
-  // Сеттер для счётчика товаров в корзине
+  // Сеттер для обновления значения счетчика
   set counter(value: number) {
-    this.setText(this._counter, String(value));
+    this.setText(this._counter, String(value)); // Устанавливаем текст счетчика
   }
 
-  // Сеттер для карточек товаров на странице
-  set store(items: HTMLElement[]) {
-    this._store.replaceChildren(...items);
+  // Сеттер для обновления содержимого каталога
+  set catalog(items: HTMLElement[]) {
+    this._catalog.replaceChildren(...items); // Заменяем существующие элементы каталога на новые
   }
 
-  // Сеттер для блока прокрутки
+  // Сеттер для блокировки страницы
   set locked(value: boolean) {
-    this.toggleClass(this._wrapper, 'page__wrapper_locked', value);
+    if (value) {
+      this._wrapper.classList.add('page__wrapper_locked'); // Добавляем класс блокировки
+    } else {
+      this._wrapper.classList.remove('page__wrapper_locked'); // Убираем класс блокировки
+    }
   }
 }

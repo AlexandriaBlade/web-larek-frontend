@@ -1,112 +1,120 @@
-import { Component } from './base/Component';
-import { CategoryType } from '../types';
-import { ensureElement, handlePrice, categoryMapping } from '../utils/utils';
-import { CDN_URL } from '../utils/constants';
+import { Component } from "./base/Component";
+import { ICard, IActions } from "../types";
+import { ensureElement } from "../utils/utils";
 
-
-interface ICardActions {
-  onClick: (event: MouseEvent) => void;
-}
-
-export interface ICard {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-  price: number | null;
-  selected: boolean;  
-}
-
+/**
+ * Класс Card представляет карточку товара с её атрибутами
+ */
 export class Card extends Component<ICard> {
-  // Ссылки на внутренние элементы карточки
-  protected _title: HTMLElement;
-  protected _image: HTMLImageElement;
-  protected _category: HTMLElement;
-  protected _price: HTMLElement;
-  protected _button: HTMLButtonElement;
+  protected titleElement: HTMLElement; // Элемент заголовка
+  protected priceElement: HTMLElement; // Элемент цены
+  protected imageElement?: HTMLImageElement; // Элемент изображения
+  protected descriptionElement?: HTMLElement; // Элемент описания
+  protected buttonElement?: HTMLButtonElement; // Элемент кнопки
+  protected categoryElement?: HTMLElement; // Элемент категории
+  protected indexElement?: HTMLElement; // Элемент индекса
+  protected buttonTitle: string; // Заголовок на кнопке
 
-  // Конструктор принимает имя блока, родительский контейнер
-  // и объект с колбэк функциями
-  constructor(
-    protected blockName: string,
-    container: HTMLElement,
-    actions?: ICardActions
-  ) {
+  constructor(container: HTMLElement, actions?: IActions) {
     super(container);
 
-    this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);
-    this._image = ensureElement<HTMLImageElement>(
-      `.${blockName}__image`,
-      container
-    );
-    this._button = container.querySelector(`.${blockName}__button`);
-    this._category = container.querySelector(`.${blockName}__category`);
-    this._price = container.querySelector(`.${blockName}__price`);
+    // Инициализация элементов из контейнера
+    this.titleElement = ensureElement<HTMLElement>('.card__title', container);
+    this.priceElement = ensureElement<HTMLElement>('.card__price', container);
+    this.imageElement = container.querySelector('.card__image');
+    this.buttonElement = container.querySelector('.card__button');
+    this.descriptionElement = container.querySelector('.card__text');
+    this.categoryElement = container.querySelector('.card__category');
+    this.indexElement = container.querySelector('.basket__item-index');
 
+    // Добавление обработчика события клика
     if (actions?.onClick) {
-      if (this._button) {
-        this._button.addEventListener('click', actions.onClick);
+      if (this.buttonElement) {
+        this.buttonElement.addEventListener('click', actions.onClick);
       } else {
         container.addEventListener('click', actions.onClick);
       }
     }
   }
 
-  // Сеттер и геттер для уникального ID
   set id(value: string) {
-    this.container.dataset.id = value;
+    this.container.dataset.id = value; // Установка id для контейнера
   }
+
   get id(): string {
-    return this.container.dataset.id || '';
+    return this.container.dataset.id || ''; // Получение id из контейнера
   }
 
-  // Сеттер и гетер для названия
   set title(value: string) {
-    this.setText(this._title, value);
+    this.setText(this.titleElement, value); // Установка текста заголовка
   }
+
   get title(): string {
-    return this._title.textContent || '';
+    return this.titleElement.textContent || ''; // Получение текста заголовка
   }
 
-  // Сеттер для кратинки
-  set image(value: string) {
-    this._image.src = CDN_URL + value;
-  }
-
-  // Сеттер для определения выбрали товар или нет
-  set selected(value: boolean) {
-    this.setDisabled(this._button, value)
-  }
-
-  // Сеттер для цены
   set price(value: number | null) {
-    this.setText(this._price, value ? handlePrice(value) + ' синапсов' : 'Бесценно');        
+    this.setText(this.priceElement, (value ? `${value.toString()} синапсов` : '')); // Установка текста цены
+    this.toggleButton(value); // Управление состоянием кнопки в зависимости от цены
   }
-  
-  
-  // Сеттер для категории
-  set category(value: CategoryType) {
-      this.setText(this._category, value);
-      this.toggleClass(this._category, categoryMapping[value], true);  
+
+  get price(): number {
+    return Number(this.priceElement.textContent || ''); // Получение цены
   }
-}
 
-export class StoreItem extends Card {
-  constructor(container: HTMLElement, actions?: ICardActions) {
-    super('card', container, actions);
+  set category(value: string) {
+    this.setText(this.categoryElement, value); // Установка текста категории
+    this.categoryElement.classList.add(this.classByCategory(value)); // Добавление класса категории
   }
-}
 
-export class StoreItemPreview extends Card {
-  protected _description: HTMLElement;
+  get category(): string {
+    return this.categoryElement.textContent || ''; // Получение текста категории
+  }
 
-  constructor(container: HTMLElement, actions?: ICardActions) {
-    super('card', container, actions);
-    this._description = container.querySelector(`.${this.blockName}__text`);
+  set index(value: string) {
+    if (this.indexElement) {
+      this.indexElement.textContent = value; // Установка индекса
+    }
+  }
+
+  get index(): string {
+    return this.indexElement?.textContent || ''; // Получение текста индекса
+  }
+
+  set image(value: string) {
+    this.setImage(this.imageElement, value, this.title); // Установка изображения
   }
 
   set description(value: string) {
-    this.setText(this._description, value);
+    this.setText(this.descriptionElement, value); // Установка текста описания
+  }
+
+  set buttonTitle(value: string) {
+    if (this.buttonElement) {
+      this.buttonElement.textContent = value; // Установка текста на кнопке
+    }
+  }
+
+  // Определяет CSS-класс в зависимости от категории
+  private classByCategory(value: string): string {
+    switch (value) {
+      case 'софт-скил':
+        return 'card__category_soft';
+      case 'хард-скил':
+        return 'card__category_hard';
+      case 'кнопка':
+        return 'card__category_button';
+      case 'дополнительное':
+        return 'card__category_additional';
+      default:
+        return 'card__category_other';
+    }
+  }
+
+  // Управляет состоянием кнопки
+  private toggleButton(value: number | null) {
+    if (this.buttonElement) {
+      this.buttonElement.disabled = value === null; // Деактивирует кнопку, если значение null
+    }
   }
 }

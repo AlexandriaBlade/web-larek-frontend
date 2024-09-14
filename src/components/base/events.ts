@@ -1,31 +1,20 @@
-
-type EventName = string | RegExp;
-type Subscriber = Function;
-type EmitterEvent = {
-    eventName: string,
-    data: unknown
-};
-
-export interface IEvents {
-    on<T extends object>(event: EventName, callback: (data: T) => void): void;
-    emit<T extends object>(event: string, data?: T): void;
-    trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
-}
+typescript
+import { Subscriber, EventName, IEvents, EmitterEvent } from "../../types";
 
 /**
- * Брокер событий, классическая реализация
- * В расширенных вариантах есть возможность подписаться на все события
- * или слушать события по шаблону например
+ * Класс для управления событиями, реализующий паттерн EventEmitter.
+ * В дальнейшем можно добавить возможность подписки на все события
+ * или прослушивания событий по определённым шаблонам.
  */
 export class EventEmitter implements IEvents {
-    _events: Map<EventName, Set<Subscriber>>;
+    private _events: Map<EventName, Set<Subscriber>>;
 
     constructor() {
         this._events = new Map<EventName, Set<Subscriber>>();
     }
 
     /**
-     * Установить обработчик на событие
+     * Подписаться на указанные события, добавляя обработчик.
      */
     on<T extends object>(eventName: EventName, callback: (event: T) => void) {
         if (!this._events.has(eventName)) {
@@ -35,7 +24,7 @@ export class EventEmitter implements IEvents {
     }
 
     /**
-     * Снять обработчик с события
+     * Отписаться от события, удаляя указанный обработчик.
      */
     off(eventName: EventName, callback: Subscriber) {
         if (this._events.has(eventName)) {
@@ -47,14 +36,16 @@ export class EventEmitter implements IEvents {
     }
 
     /**
-     * Инициировать событие с данными
+     * Сгенерировать событие с переданными данными.
      */
     emit<T extends object>(eventName: string, data?: T) {
         this._events.forEach((subscribers, name) => {
-            if (name === '*') subscribers.forEach(callback => callback({
-                eventName,
-                data
-              }));
+            if (name === '*') {
+                subscribers.forEach(callback => callback({
+                    eventName,
+                    data
+                }));
+            }
             if (name instanceof RegExp && name.test(eventName) || name === eventName) {
                 subscribers.forEach(callback => callback(data));
             }
@@ -62,21 +53,21 @@ export class EventEmitter implements IEvents {
     }
 
     /**
-     * Слушать все события
+     * Подписаться на все возможные события.
      */
     onAll(callback: (event: EmitterEvent) => void) {
         this.on("*", callback);
     }
 
     /**
-     * Сбросить все обработчики
+     * Удалить все зарегистрированные обработчики событий.
      */
     offAll() {
-        this._events = new Map<string, Set<Subscriber>>();
+        this._events.clear();
     }
 
     /**
-     * Сделать коллбек триггер, генерирующий событие при вызове
+     * Создать триггер-коллбек, который будет генерировать событие при его вызове.
      */
     trigger<T extends object>(eventName: string, context?: Partial<T>) {
         return (event: object = {}) => {
@@ -87,4 +78,3 @@ export class EventEmitter implements IEvents {
         };
     }
 }
-

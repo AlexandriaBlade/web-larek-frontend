@@ -1,133 +1,124 @@
-import { IOrder, IProduct, FormErrors, IOrderForm, IAppState } from '../types';
-import { Model } from './base/Model';
-import {IEvents} from "./base/events";
+import { Model } from "./base/Model";
+import { IProduct, IOrder, IDelivery, IContact, IAppState, FormErrors } from "../types";
 
+// Определение типа события изменения каталога
+export type CatalogChangeEvent = {
+  catalog: Product[]
+};
+
+// Класс Product представляет продукт с его атрибутами
 export class Product extends Model<IProduct> {
-  id: string;
-  description: string;
-  image: string;
-  title: string;
-  category: string;
-  price: number | null;
-  selected: boolean;
+    id: string; // Уникальный идентификатор продукта
+    title: string; // Название продукта
+    price: number | null; // Цена продукта
+    description: string; // Описание продукта
+    category: string; // Категория продукта
+    image: string; // URL изображения продукта
 }
 
-/*
-  * Класс, описывающий состояние приложения
-  * */
+// Класс AppState управляет состоянием приложения
 export class AppState extends Model<IAppState> {
-  // Корзина с товарами
-  basket: Product[] = [];
-
-  // Массив со всеми товарами
-  store: Product[];
-
-  // Объект заказа клиента
-  order: IOrder = {
-    items: [],
-    payment: '',
-    total: null,
+  catalog: Product[]; // Каталог продуктов
+  basket: Product[] = []; // Корзина для покупки
+  order: IOrder = { // Данные заказа
+    payment: 'online',
     address: '',
     email: '',
     phone: '',
+    total: 0,
+    items: []
   };
+  preview: string | null; // Предварительный просмотр выбранного продукта
+  formErrors: FormErrors = {}; // Ошибки в форме
 
-  // Объект с ошибками форм
-  formErrors: FormErrors = {};
-
-  addToBasket(value: Product) {
-    this.basket.push(value);
-  }
-
-  getBasket() {
-    return this.basket;
-  }
-
-  deleteFromBasket(id: string) {
-    this.basket = this.basket.filter(item => item.id !== id);
-    this.emitChanges('basket:open');
-  }
-
+  // Очищает корзину
   clearBasket() {
-    this.basket.length = 0;
+    this.basket = [];
+    this.updateBasket();
   }
 
-  getBasketAmount() {
-    return this.basket.length;
-  }
-
-  setItems() {
-    this.order.items = this.basket.map(item => item.id)
-  }
-
-  setOrderField(field: keyof IOrderForm, value: string) {
-    this.order[field] = value;
-
-    if (this.validateContacts(field)) {
-    this.events.emit('contacts:ready', this.order)
-    }
-    if (this.validateOrder()) {
-    this.events.emit('order:ready', this.order);
-    }
-  }
-
-  validateContacts(field: keyof IOrder) {
-    const errors: typeof this.formErrors = {};
-    if (field === 'email' || field === 'phone') {
-      const emailError = !this.order.email.match(/^\S+@\S+\.\S+$/)
-          ? 'email'
-          : '';
-      const phoneError = !this.order.phone.match(/^\+7\d{10}$/)
-          ? 'телефон'
-          : '';
-
-      if (emailError && phoneError) {
-          errors.email = `Необходимо указать ${emailError} и ${phoneError}`;
-      } else if (emailError) {
-          errors.email = `Необходимо указать ${emailError}`;
-      } else if (phoneError) {
-          errors.phone = `Необходимо указать ${phoneError}`;
-      }
-    }
-    this.formErrors = errors;
-    this.events.emit('contactsFormErrors:change', this.formErrors);
-    return Object.keys(errors).length === 0;
-  }
-
-  validateOrder() {
-    const errors: typeof this.formErrors = {};
-    if (!this.order.address) {
-     errors.address = 'Необходимо указать адрес';
-    }
-    if (!this.order.payment) {
-     errors.payment = 'Необходимо указать способ оплаты';
-    }
-    this.formErrors = errors;
-    this.events.emit('orderFormErrors:change', this.formErrors);
-    return Object.keys(errors).length === 0;
-  }
-
-  refreshOrder() {
+  // Очищает данные заказа
+  clearOrder() {
     this.order = {
-      items: [],
-      total: null,
+      payment: 'online',
       address: '',
       email: '',
       phone: '',
-      payment: ''
+      total: 0,
+      items: []
     };
   }
 
-  getTotalBasketPrice() {
-    return this.basket.reduce((sum, next) => sum + next.price, 0);
+  // Устанавливает каталог продуктов
+  setCatalog(items: IProduct[]) {
+    this.catalog = items.map(item => new Product(item, this.events));
+    this.emitChanges('items:changed', { catalog: this.catalog });
   }
 
-  setStore(items: IProduct[]) {
-    this.store = items.map((item) => new Product({ ...item, selected: false }, this.events));
-    this.emitChanges('items:changed', { store: this.store });
+  // Устанавливает предварительный просмотр выбранного продукта
+  setPreview(item: Product) {
+    this.preview = item.id;
+    this.emitChanges('preview:changed', item);
   }
 
-  resetSelected() {
-    this.store.forEach(item => item.selected = false)
+  // Обновляет состояние корзины
+  updateBasket() {
+    this.emitChanges('counter:changed', this.basket);
+    this.emitChanges('basket:changed', this.basket);
+  }
+
+  // Добавляет продукт в корзину
+  addToBasket(item: Product) {
+    if (!this.basket.includes(item)) { // Проверяем, есть ли продукт в корзине
+      this.basket.push(item);
+      this.updateBasket();
+    }
+  }
+
+  // Удаляет продукт из корзины
+  removeFromBasket(item: Product) {
+    this.basket = this.basket.filter(it => it !== item);
+    this.updateBasket();
+  }
+
+  // Устанавливает поле доставки
+  setDeliveryField(field: keyof IDelivery, value: string) {
+    this.order[field] = value;
+    if (this.validateDelivery()) {
+      this.events.emit('delivery:ready', this.order);
+    }
+  }
+
+  // Устанавливает поле контакта
+  setContactField(field: keyof IContact, value: string) {
+    this.order[field] = value;
+    if (this.validateContact()) {
+      this.events.emit('contact:ready', this.order);
+    }
+  }
+
+  // Валидация данных доставки
+  validateDelivery() {
+    const errors: typeof this.formErrors = {};
+    if (!this.order.address) {
+      errors.address = "Необходимо указать адрес";
+    }
+    this.formErrors = errors;
+    this.events.emit('formErrors:change', this.formErrors);
+    return Object.keys(errors).length === 0;
+  }
+
+  // Валидация контактных данных
+  validateContact() {
+    const errors: typeof this.formErrors = {};
+    if (!this.order.email) {
+      errors.email = 'Необходимо указать email';
+    }
+    if (!this.order.phone) {
+      errors.phone = 'Необходимо указать телефон';
+    }
+    this.formErrors = errors;
+    this.events.emit('formErrors:change', this.formErrors);
+    return Object.keys(errors).length === 0;
   }
 }

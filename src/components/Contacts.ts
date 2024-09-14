@@ -1,29 +1,29 @@
-import { IEvents } from './base/events';
-import { Form } from './common/Form';
+import { Form } from "./common/Form";
+import { IContact, IEvents } from "../types";
 
-/*
-  * Интерфейс, описывающий окошко контакты
-  * */
-export interface IContacts {
-  // Телефон
-  phone: string;
-
-  // Электронная почта
-  email: string;
-}
-
-/*
-  * Класс, описывающий окошко контакты
-  * */
-export class ContactsForm extends Form<IContacts> {
-  // Конструктор принимает родительский элемент и обработчик событий
-  constructor(container: HTMLFormElement, events: IEvents) {
-      super(container, events);
-  }
-    set email(value: string) {
-        (this.container.elements.namedItem('email') as HTMLInputElement).value = value;
+/**
+ * Класс Contact представляет форму для ввода контактной информации.
+ */
+export class Contact extends Form<IContact> {
+    constructor(container: HTMLFormElement, events: IEvents) {
+        super(container, events); // Инициализация базового класса Form
     }
+
+    // Устанавливает номер телефона в форме
     set phone(value: string) {
-        (this.container.elements.namedItem('phone') as HTMLInputElement).value = value;
-    }    
+        this.setInputValue('phone', value);
+    }
+
+    // Устанавливает электронную почту в форме
+    set email(value: string) {
+        this.setInputValue('email', value);
+    }
+
+    // Утилитный метод для установки значения поля ввода
+    private setInputValue(fieldName: string, value: string) {
+        const inputElement = this.container.elements.namedItem(fieldName) as HTMLInputElement;
+        if (inputElement) {
+            inputElement.value = value; // Устанавливаем значение поля ввода
+        }
+    }
 }
