@@ -1,4 +1,3 @@
-typescript
 import { Subscriber, EventName, IEvents, EmitterEvent } from "../../types";
 
 /**

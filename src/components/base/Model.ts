@@ -1,4 +1,3 @@
-typescript
 import { IEvents } from "../../types";
 
 // Проверка, является ли объект экземпляром Model
@@ -12,7 +11,7 @@ export const isModel = (obj: unknown): obj is Model<any> => {
  */
 export abstract class Model<T> {
     constructor(initialData: Partial<T>, protected eventSystem: IEvents) {
-        Object.assign(this, data); // Копирует данные в текущий объект
+        Object.assign(this, initialData); // Копирует данные в текущий объект
     }
 
     // Уведомляет слушателей об изменении состояния модели

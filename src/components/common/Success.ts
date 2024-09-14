@@ -1,12 +1,22 @@
-import { Component } from "../base/Component";
+// Импортируем базовый компонент и утилиты
+import { BaseComponent } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
-import { ISuccess, ISuccessActions } from "../../types";
+
+// Интерфейсы для типа данных
+export interface ISuccess {
+    // Здесь можно определить необходимые свойства, например:
+    message?: string;
+}
+
+export interface ISuccessActions {
+    onClick?: () => void; // Действие для обработки клика по кнопке
+}
 
 /**
  * Класс Success представляет уведомление об успешном завершении действия.
  * Управляет отображением информации и обработкой событий закрытия.
  */
-export class Success extends Component<ISuccess> {
+export class Success extends BaseComponent<ISuccess> {
     protected closeButton: HTMLElement; // Кнопка закрытия уведомления
     protected totalAmount: HTMLElement; // Элемент для отображения общей суммы
 
@@ -16,7 +26,7 @@ export class Success extends Component<ISuccess> {
      * @param actions - Объект с действиями, связанными с уведомлением.
      */
     constructor(container: HTMLElement, actions: ISuccessActions) {
-        super(container); // Инициализация базового класса
+        super(container); // Инициализация базового класса с контейнером
 
         // Получаем элементы кнопки закрытия и элемента для отображения суммы
         this.closeButton = ensureElement<HTMLElement>('.order-success__close', this.container);

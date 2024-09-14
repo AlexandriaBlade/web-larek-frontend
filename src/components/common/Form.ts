@@ -1,4 +1,4 @@
-import { Component } from "../base/Component";
+import { BaseComponent } from "../base/Component"; // Используйте правильный класс
 import { IEvents, IFormState } from "../../types";
 import { ensureElement } from "../../utils/utils";
 
@@ -6,7 +6,7 @@ import { ensureElement } from "../../utils/utils";
  * Класс Form управляет поведением и состоянием формы.
  * Обрабатывает события ввода и отправки данных.
  */
-export class Form<T> extends Component<IFormState> {
+export class Form<T> extends BaseComponent<IFormState> {
     protected submitButton: HTMLButtonElement; // Кнопка для отправки формы
     protected errorContainer: HTMLElement; // Контейнер для отображения ошибок
 
@@ -62,7 +62,7 @@ export class Form<T> extends Component<IFormState> {
      * @param errorMsg - Сообщение об ошибках для отображения.
      */
     set errors(errorMsg: string) {
-        this.setText(this.errorContainer, errorMsg); // Обновляем текст ошибок
+        this.updateText(this.errorContainer, errorMsg); // Обновляем текст ошибок
     }
 
     /**
@@ -70,11 +70,10 @@ export class Form<T> extends Component<IFormState> {
      * @param state - Новое состояние формы.
      * @returns HTML-элемент контейнера формы.
      */
-    render(state: Partial<T> & IFormState) {
+    override render(state: Partial<T> & IFormState) {
         const { valid, errors, ...inputValues } = state; // Извлекаем валидность, ошибки и значения полей
         super.render({ valid, errors }); // Обновляем базовое состояние
         Object.assign(this, inputValues); // Применяем значения к форме
         return this.container; // Возвращаем HTML-элемент формы
     }
 }
-

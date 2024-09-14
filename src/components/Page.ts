@@ -1,9 +1,9 @@
-import { Component } from "./base/Component"; // Импорт базового класса Component
+import { BaseComponent } from "./base/Component"; // Исправленный импорт
 import { IEvents, IPage } from "../types"; // Импорт интерфейсов событий и страницы
 import { ensureElement } from "../utils/utils"; // Импорт утилиты для проверки наличия элементов
 
-// Класс Page наследуется от Component и представляет собой страницу
-export class Page extends Component<IPage> {
+// Класс Page наследуется от BaseComponent и представляет собой страницу
+export class Page extends BaseComponent<IPage> {
   // Элементы, представляющие различные части страницы
   protected _counter: HTMLElement; // Счетчик корзины
   protected _catalog: HTMLElement; // Каталог товаров
@@ -28,7 +28,7 @@ export class Page extends Component<IPage> {
 
   // Сеттер для обновления значения счетчика
   set counter(value: number) {
-    this.setText(this._counter, String(value)); // Устанавливаем текст счетчика
+    this.updateText(this._counter, String(value)); // Устанавливаем текст счетчика
   }
 
   // Сеттер для обновления содержимого каталога

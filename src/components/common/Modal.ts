@@ -1,14 +1,14 @@
-import { Component } from "../base/Component";
-import { ensureElement } from "../../utils/utils";
-import { IEvents, IModalData } from "../../types";
+import { BaseComponent } from "../base/Component"; // Убедитесь, что путь и имя класса корректны
+import { ensureElement } from "../../utils/utils"; // Проверьте, что эта функция корректно реализована
+import { IEvents, IModalData } from "../../types"; // Импорт интерфейсов
 
 /**
  * Класс Modal представляет модальное окно.
  * Управляет открытием, закрытием и содержимым модального окна.
  */
-export class Modal extends Component<IModalData> {
+export class Modal extends BaseComponent<IModalData> {
     protected closeButton: HTMLButtonElement; // Кнопка закрытия модального окна
-    protected content: HTMLElement; // Контейнер для содержимого модального окна
+    protected modalContent: HTMLElement; // Контейнер для содержимого модального окна
 
     /**
      * Конструктор класса Modal.
@@ -20,20 +20,24 @@ export class Modal extends Component<IModalData> {
 
         // Получаем элементы кнопки закрытия и контейнера содержимого
         this.closeButton = ensureElement<HTMLButtonElement>('.modal__close', container);
-        this.content = ensureElement<HTMLElement>('.modal__content', container);
+        this.modalContent = ensureElement<HTMLElement>('.modal__content', container);
 
         // Добавляем слушатели событий
         this.closeButton.addEventListener('click', this.close.bind(this)); // Закрытие при нажатии на кнопку закрытия
         this.container.addEventListener('click', this.close.bind(this)); // Закрытие при клике вне содержимого
-        this.content.addEventListener('click', (event) => event.stopPropagation()); // Предотвращение закрытия при клике внутри содержимого
+        this.modalContent.addEventListener('click', (event) => event.stopPropagation()); // Предотвращение закрытия при клике внутри содержимого
     }
 
     /**
      * Устанавливает содержимое модального окна.
      * @param value - Новый HTML-элемент, который будет заменять текущее содержимое модального окна.
      */
-    set content(value: HTMLElement) {
-        this.content.replaceChildren(value); // Заменяем текущее содержимое на новое значение
+    set content(value: HTMLElement | null) {
+        if (value) {
+            this.modalContent.replaceChildren(value); // Заменяем текущее содержимое на новое значение
+        } else {
+            this.modalContent.innerHTML = ''; // Очищаем содержимое, если передано null
+        }
     }
 
     /**
@@ -59,8 +63,8 @@ export class Modal extends Component<IModalData> {
      * @returns HTML-элемент контейнера модального окна.
      */
     render(data: IModalData): HTMLElement {
-        super.render(data); // Вызываем метод родительского класса для рендера данных
-        this.open(); // Открываем модальное окно после рендера
+        super.render(data); // Вызываем метод родительского класса для рендеринга данных
+        this.open(); // Открываем модальное окно после рендеринга
         return this.container; // Возвращаем HTML-элемент контейнера модального окна
     }
 }

@@ -1,4 +1,4 @@
-import { Component } from "../base/Component";
+import { BaseComponent } from "../base/Component"; // Исправленный импорт
 import { createElement, ensureElement } from "../../utils/utils";
 import { IBasketView } from "../../types";
 import { EventEmitter } from "../base/events";
@@ -7,7 +7,7 @@ import { EventEmitter } from "../base/events";
  * Класс Basket представляет корзину покупок.
  * Управляет отображением товаров, общей ценой и взаимодействием с кнопками.
  */
-export class Basket extends Component<IBasketView> {
+export class Basket extends BaseComponent<IBasketView> {
     protected itemList: HTMLElement; // Список товаров в корзине
     protected totalAmount: HTMLElement; // Элемент для отображения общей суммы
     protected actionButton: HTMLButtonElement; // Кнопка для оформления заказа
@@ -21,9 +21,9 @@ export class Basket extends Component<IBasketView> {
         super(container);
 
         // Получаем необходимые элементы из контейнера корзины
-        this.itemList = ensureElement<HTMLElement>('.basket__list', this.container);
-        this.totalAmount = this.container.querySelector('.basket__price');
-        this.actionButton = this.container.querySelector('.basket__button');
+        this.itemList = ensureElement<HTMLElement>('.basket__list', container);
+        this.totalAmount = container.querySelector('.basket__price') as HTMLElement;
+        this.actionButton = container.querySelector('.basket__button') as HTMLButtonElement;
 
         // Добавляем обработчик события для кнопки оформления заказа
         if (this.actionButton) {
@@ -56,7 +56,7 @@ export class Basket extends Component<IBasketView> {
      * @param total - Общая сумма в числовом формате.
      */
     set total(total: number) {
-        this.setText(this.totalAmount, `${total.toString()} синапсов`); // Обновляем текст в элементе суммы
+        this.updateText(this.totalAmount, `${total.toString()} синапсов`); // Обновляем текст в элементе суммы
     }
 
     /**
