@@ -1,16 +1,16 @@
-// URL для API веб-магазина, формируется на основе переменной окружения API_ORIGIN
-export const API_URL = `${process.env.API_ORIGIN}/api/weblarek`;
+// Константа для хранения базового URL API, получаемого из переменной окружения API_ORIGIN
+export const API_URL = `${process.env.API_ORIGIN}/api/weblarek`; // URL для работы с API приложения WebLarek
 
-// URL для контента веб-магазина, также формируется на основе переменной окружения API_ORIGIN
-export const CDN_URL = `${process.env.API_ORIGIN}/content/weblarek`;
+// Константа для хранения базового URL CDN, получаемого из переменной окружения API_ORIGIN
+export const CDN_URL = `${process.env.API_ORIGIN}/content/weblarek`; // URL для доступа к контенту через CDN
 
-// Объект настроек для приложения (пока пустой, можно добавлять параметры по мере необходимости)
+// Объект settings для хранения настроек приложения (пока пустой)
 export const settings = {
-    // Пример: apiVersion: '1.0', timeout: 5000
+    // Можно добавить настройки приложения сюда в будущем
 };
 
-// Объект, содержащий методы оплаты; ключи — это идентификаторы методов, значения — их описание
+// Объект PaymentMethods для хранения доступных методов оплаты
 export const PaymentMethods: { [key: string]: string } = {
-    "card": "online", // Оплата картой осуществляется онлайн
-    "cash": "cash"    // Оплата наличными
+    "card": "online", // Оплата картой через онлайн-систему
+    "cash": "cash"    // Наличная оплата
 };

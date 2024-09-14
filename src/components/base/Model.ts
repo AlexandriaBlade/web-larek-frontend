@@ -1,22 +1,24 @@
 import { IEvents } from "../../types";
 
-// Проверка, является ли объект экземпляром Model
+// Гарда для проверки на экземпляр модели
 export const isModel = (obj: unknown): obj is Model<any> => {
+    // Проверяем, является ли объект экземпляром класса Model
     return obj instanceof Model;
 }
 
 /**
- * Абстрактный класс для всех моделей данных.
- * Используется для отличия моделей от обычных объектов.
+ * Базовая модель, чтобы можно было отличить ее от простых объектов с данными
  */
 export abstract class Model<T> {
-    constructor(initialData: Partial<T>, protected eventSystem: IEvents) {
-        Object.assign(this, initialData); // Копирует данные в текущий объект
+    // Конструктор принимает частичные данные и объект для работы с событиями
+    constructor(data: Partial<T>, protected events: IEvents) {
+        // Копируем данные в объект модели с помощью Object.assign
+        Object.assign(this, data);
     }
 
-    // Уведомляет слушателей об изменении состояния модели
-    emitChanges(eventName: string, eventData?: object) {
-        // Отправляем события с возможностью указания дополнительных данных
-        this.eventSystem.emit(eventName, eventData ?? {});
+    // Сообщить всем, что модель изменилась
+    emitChanges(event: string, payload?: object) {
+        // Состав данных может быть модифицирован, если будет передан payload
+        this.events.emit(event, payload ?? {}); // Вызываем событие и передаем данные (или пустой объект, если нет данных)
     }
 }

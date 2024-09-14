@@ -1,53 +1,58 @@
+export abstract class Component<T> {
+    // Конструктор класса принимает контейнер, в котором будет размещён компонент
+    protected constructor(protected readonly container: HTMLElement) {
+    }
 
-/**
- * Абстрактный базовый компонент для работы с DOM-элементами.
- * Позволяет создавать компоненты с общими функциями для работы с HTML.
- */
-export abstract class BaseComponent<T> {
-    protected constructor(protected readonly container: HTMLElement) {}
+    // Инструментарий для работы с DOM в дочерних компонентах
 
-    // Переключает наличие указанного класса на элементе
-    protected toggleClass(element: HTMLElement, className: string, force?: boolean): void {
+    // Метод для переключения (добавления или удаления) CSS-класса у элемента
+    toggleClass(element: HTMLElement, className: string, force?: boolean) {
         element.classList.toggle(className, force);
     }
 
-    // Обновляет текстовое содержимое элемента
-    protected updateText(element: HTMLElement, value: unknown): void {
+    // Устанавливает текстовое содержимое для указанного элемента
+    protected setText(element: HTMLElement, value: unknown) {
         if (element) {
-            element.textContent = String(value);
+            element.textContent = String(value); // Преобразуем значение в строку и устанавливаем его как текст
         }
     }
 
-    // Устанавливает состояние блокировки элемента (используется для кнопок и форм)
-    protected setDisabledState(element: HTMLElement, isDisabled: boolean): void {
+    // Сменяет статус блокировки (активен/неактивен) указанного элемента
+    setDisabled(element: HTMLElement, state: boolean) {
         if (element) {
-            isDisabled ? element.setAttribute('disabled', 'disabled') : element.removeAttribute('disabled');
+            if (state) {
+                // Если состояние true, добавляем атрибут disabled
+                element.setAttribute('disabled', 'disabled');
+            } else {
+                // Если состояние false, удаляем атрибут disabled
+                element.removeAttribute('disabled');
+            }
         }
     }
 
-    // Скрывает элемент, устанавливая его стиль на 'none'
-    protected hide(element: HTMLElement): void {
+    // Метод для скрытия элемента, устанавливая его стиль display в 'none'
+    protected setHidden(element: HTMLElement) {
         element.style.display = 'none';
     }
 
-    // Показывает элемент, убирая его стиль display
-    protected show(element: HTMLElement): void {
-        element.style.display = ''; // Возвращает элемент в состояние отображения по умолчанию
+    // Метод для отображения элемента, удаляя стиль display
+    protected setVisible(element: HTMLElement) {
+        element.style.removeProperty('display'); // Убирает свойство display, чтобы элемент снова стал видимым
     }
 
-    // Устанавливает изображение и альтернативный текст для элемента img
-    protected updateImage(element: HTMLImageElement, src: string, alt?: string): void {
+    // Устанавливает источник изображения и, при необходимости, альтернативный текст
+    protected setImage(element: HTMLImageElement, src: string, alt?: string) {
         if (element) {
-            element.src = src; // Устанавливаем источник изображения
+            element.src = src; // Устанавливаем путь к изображению
             if (alt) {
                 element.alt = alt; // Устанавливаем альтернативный текст, если он задан
             }
         }
     }
 
-    // Возвращает корневой DOM-элемент компонента
-    public render(data?: Partial<T>): HTMLElement {
-        Object.assign(this, data ?? {}); // Обновляет свойства компонента, основываясь на переданных данных (если они есть)
-        return this.container; // Возвращает контейнер, содержащий компонент
+    // Метод для рендеринга компонента, возвращает корневой DOM-элемент
+    render(data?: Partial<T>): HTMLElement {
+        Object.assign(this as object, data ?? {}); // Обновляем свойства компонента переданными данными (если есть)
+        return this.container; // Возвращаем корневой элемент контейнера
     }
 }

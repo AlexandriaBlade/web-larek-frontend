@@ -1,48 +1,38 @@
-// Импортируем базовый компонент и утилиты
-import { BaseComponent } from "../base/Component";
-import { ensureElement } from "../../utils/utils";
-
-// Интерфейсы для типа данных
-export interface ISuccess {
-    // Здесь можно определить необходимые свойства, например:
-    message?: string;
-}
-
-export interface ISuccessActions {
-    onClick?: () => void; // Действие для обработки клика по кнопке
-}
+import { Component } from "../base/Component"; // Импорт базового компонента
+import { ensureElement } from "../../utils/utils"; // Импорт вспомогательной функции для получения элементов
+import { ISuccess, ISuccessActions } from "../../types"; // Импорт типов для успешного сообщения и действий
 
 /**
- * Класс Success представляет уведомление об успешном завершении действия.
- * Управляет отображением информации и обработкой событий закрытия.
+ * Класс Success представляет собой компонент для отображения успешного сообщения о заказе.
+ * Он наследует функциональность от базового класса Component.
  */
-export class Success extends BaseComponent<ISuccess> {
-    protected closeButton: HTMLElement; // Кнопка закрытия уведомления
-    protected totalAmount: HTMLElement; // Элемент для отображения общей суммы
+export class Success extends Component<ISuccess> {
+    protected _close: HTMLElement; // Элемент кнопки закрытия успешного сообщения
+    protected _total: HTMLElement; // Элемент, который отображает итоговую сумму заказа
 
     /**
      * Конструктор класса Success.
-     * @param container - HTML-элемент, который используется как контейнер для уведомления.
-     * @param actions - Объект с действиями, связанными с уведомлением.
+     * @param container - HTML-элемент, в котором будет размещён компонент успеха
+     * @param actions - объект с действиями, которые могут быть выполнены (например, обработчик клика)
      */
     constructor(container: HTMLElement, actions: ISuccessActions) {
-        super(container); // Инициализация базового класса с контейнером
+        super(container); // Вызов конструктора родительского класса
 
-        // Получаем элементы кнопки закрытия и элемента для отображения суммы
-        this.closeButton = ensureElement<HTMLElement>('.order-success__close', this.container);
-        this.totalAmount = ensureElement<HTMLElement>('.order-success__description', this.container);
+        // Обеспечиваем наличие элемента кнопки закрытия и элемента для итоговой суммы
+        this._close = ensureElement<HTMLElement>('.order-success__close', this.container);
+        this._total = ensureElement<HTMLElement>('.order-success__description', this.container);
 
-        // Добавляем обработчик событий для кнопки закрытия, если он задан
+        // Если передан обработчик клика, добавляем его на элемент закрытия
         if (actions?.onClick) {
-            this.closeButton.addEventListener('click', actions.onClick);
+            this._close.addEventListener('click', actions.onClick);
         }
     }
 
     /**
-     * Устанавливает текст для отображения общей суммы.
-     * @param value - Сумма, которую нужно отобразить в уведомлении.
+     * Сеттер для обновления текста итоговой суммы.
+     * @param value - сумма, которая будет отображена
      */
     set total(value: string) {
-        this.totalAmount.textContent = `Списано ${value} синапсов`; // Обновляем текст элемента с суммой
+        this._total.textContent = `Списано ${value} синапсов`; // Обновляем текстовое содержание с использованием переданного значения
     }
 }

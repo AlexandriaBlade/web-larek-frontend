@@ -1,38 +1,40 @@
-import { Api } from "./base/api"; // Базовый API
-import { IOrderResult, IProduct, IOrder, ApiListResponse, IWebLarekAPI } from "../types"; // Интерфейсы и типы
+import { Api } from "./base/api"; // Импорт базового класса Api для выполнения API-запросов
+import { IOrderResult, IProduct, IOrder, ApiListResponse, IWebLarekAPI } from "../types"; // Импорт интерфейсов, описывающих результат заказа, продукт, заказ и структуру API
 
+// Класс WebLarekAPI, который наследует функциональность от класса Api и реализует интерфейс IWebLarekAPI
 export class WebLarekAPI extends Api implements IWebLarekAPI {
-  readonly cdn: string; // CDN для изображений
-  
+  readonly cdn: string; // URL для контентной доставки (CDN)
+
+  // Конструктор класса WebLarekAPI, принимает адрес CDN, базовый URL и параметры запроса
   constructor(cdn: string, baseUrl: string, options?: RequestInit) {
-    super(baseUrl, options); // Инициализация базового класса
-    this.cdn = cdn; // Установка CDN
+    super(baseUrl, options); // Вызов конструктора родительского класса Api
+    this.cdn = cdn; // Инициализация свойства cdn
   }
 
-  // Получение товара по ID
+  // Метод для получения информации о продукте по его идентификатору
   getProductItem(id: string): Promise<IProduct> {
     return this.get(`/product/${id}`).then(
       (item: IProduct) => ({
         ...item,
-        image: this.cdn + item.image, // Форматирование URL изображения
+        image: this.cdn + item.image, // Формирование полного URL изображения с использованием CDN
       })
     );
   }
 
-  // Получение списка товаров
+  // Метод для получения списка продуктов
   getProductList(): Promise<IProduct[]> {
     return this.get('/product').then((data: ApiListResponse<IProduct>) =>
       data.items.map((item) => ({
         ...item,
-        image: this.cdn + item.image // Форматирование URL изображения для списка
+        image: this.cdn + item.image, // Формирование полного URL изображения для каждого продукта
       }))
     );
   }
 
-  // Отправка заказа
+  // Метод для размещения заказа на продукты
   orderProducts(order: IOrder): Promise<IOrderResult> {
     return this.post(`/order`, order).then(
-      (data: IOrderResult) => data // Возврат результата заказа
+      (data: IOrderResult) => data // Возвращение результата выполнения заказа
     );
   }
 }

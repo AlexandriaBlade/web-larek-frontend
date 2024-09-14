@@ -1,70 +1,66 @@
-import { BaseComponent } from "../base/Component"; // Убедитесь, что путь и имя класса корректны
-import { ensureElement } from "../../utils/utils"; // Проверьте, что эта функция корректно реализована
-import { IEvents, IModalData } from "../../types"; // Импорт интерфейсов
+import { Component } from "../base/Component"; // Импорт базового компонента
+import { ensureElement } from "../../utils/utils"; // Импорт вспомогательной функции для получения элементов
+import { IEvents, IModalData } from "../../types"; // Импорт типов событий и данных модального окна
 
 /**
- * Класс Modal представляет модальное окно.
- * Управляет открытием, закрытием и содержимым модального окна.
+ * Класс Modal отвечает за отображение модального окна в приложении.
+ * Он наследует функциональность от базового класса Component.
  */
-export class Modal extends BaseComponent<IModalData> {
-    protected closeButton: HTMLButtonElement; // Кнопка закрытия модального окна
-    protected modalContent: HTMLElement; // Контейнер для содержимого модального окна
+export class Modal extends Component<IModalData> {
+    protected _closeButton: HTMLButtonElement; // Кнопка закрытия модального окна
+    protected _content: HTMLElement; // Элемент, содержащий содержимое модального окна
 
     /**
      * Конструктор класса Modal.
-     * @param container - HTML-элемент, который будет использоваться как контейнер для модального окна.
-     * @param events - Объект для управления событиями, связанными с модальным окном.
+     * @param container - HTML-элемент, в котором будет размещено модальное окно
+     * @param events - экземпляр для управления событиями
      */
     constructor(container: HTMLElement, protected events: IEvents) {
-        super(container); // Инициализация базового класса
+        super(container); // Вызов конструктора родительского класса
 
-        // Получаем элементы кнопки закрытия и контейнера содержимого
-        this.closeButton = ensureElement<HTMLButtonElement>('.modal__close', container);
-        this.modalContent = ensureElement<HTMLElement>('.modal__content', container);
+        // Обеспечиваем наличие кнопки закрытия и элемента для содержимого модального окна
+        this._closeButton = ensureElement<HTMLButtonElement>('.modal__close', container);
+        this._content = ensureElement<HTMLElement>('.modal__content', container);
 
-        // Добавляем слушатели событий
-        this.closeButton.addEventListener('click', this.close.bind(this)); // Закрытие при нажатии на кнопку закрытия
-        this.container.addEventListener('click', this.close.bind(this)); // Закрытие при клике вне содержимого
-        this.modalContent.addEventListener('click', (event) => event.stopPropagation()); // Предотвращение закрытия при клике внутри содержимого
+        // Добавление обработчиков событий для закрытия модального окна
+        this._closeButton.addEventListener('click', this.close.bind(this)); // Закрытие окна при клике на кнопку
+        this.container.addEventListener('click', this.close.bind(this)); // Закрытие окна при клике вне содержимого
+        this._content.addEventListener('click', (event) => event.stopPropagation()); // Остановить всплытие события клика на содержимом
     }
 
     /**
-     * Устанавливает содержимое модального окна.
-     * @param value - Новый HTML-элемент, который будет заменять текущее содержимое модального окна.
+     * Сеттер для обновления содержимого модального окна.
+     * @param value - новый HTML элемент, который будет размещён в модальном окне
      */
-    set content(value: HTMLElement | null) {
-        if (value) {
-            this.modalContent.replaceChildren(value); // Заменяем текущее содержимое на новое значение
-        } else {
-            this.modalContent.innerHTML = ''; // Очищаем содержимое, если передано null
-        }
+    set content(value: HTMLElement) {
+        this._content.replaceChildren(value); // Заменяем текущее содержимое новым элементом
     }
 
     /**
-     * Открывает модальное окно и эмитирует событие открытия.
+     * Метод для открытия модального окна.
      */
     open() {
         this.container.classList.add('modal_active'); // Добавляем класс для отображения модального окна
-        this.events.emit('modal:open'); // Эмитируем событие об открытии модального окна
+        this.events.emit('modal:open'); // Генерируем событие открытия модального окна
     }
 
     /**
-     * Закрывает модальное окно и эмитирует событие закрытия.
+     * Метод для закрытия модального окна.
      */
     close() {
-        this.container.classList.remove('modal_active'); // Убираем класс, чтобы скрыть модальное окно
+        this.container.classList.remove('modal_active'); // Удаляем класс, чтобы скрыть модальное окно
         this.content = null; // Очищаем содержимое модального окна
-        this.events.emit('modal:close'); // Эмитируем событие о закрытии модального окна
+        this.events.emit('modal:close'); // Генерируем событие закрытия модального окна
     }
 
     /**
-     * Отрисовывает модальное окно с заданными данными.
-     * @param data - Данные для обновления содержимого модального окна.
-     * @returns HTML-элемент контейнера модального окна.
+     * Метод для рендеринга модального окна с учетом данных.
+     * @param data - данные для отображения в модальном окне
+     * @returns контейнер модального окна
      */
     render(data: IModalData): HTMLElement {
-        super.render(data); // Вызываем метод родительского класса для рендеринга данных
+        super.render(data); // Вызываем метод рендеринга родительского класса
         this.open(); // Открываем модальное окно после рендеринга
-        return this.container; // Возвращаем HTML-элемент контейнера модального окна
+        return this.container; // Возвращаем контейнер модального окна
     }
 }

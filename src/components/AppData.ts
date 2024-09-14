@@ -1,159 +1,164 @@
-// Определение интерфейсов
-export interface IProduct {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  image: string;
-  price: number;
+import { Model } from "./base/Model"; // Импорт базового класса Model
+import { IProduct, IOrder, IDelivery, IContact, IAppState, FormErrors } from "../types"; // Импорт типов для продукта, заказа, доставки и состояния приложения
+
+/**
+ * Тип события изменения каталога, включающего массив продуктов.
+ */
+export type CatalogChangeEvent = {
+  catalog: Product[]
+};
+
+/**
+ * Класс Product представляет собой модель продукта с его характеристиками.
+ * Он наследует функциональность от базового класса Model.
+ */
+export class Product extends Model<IProduct> {
+    id: string; // Уникальный идентификатор продукта
+    title: string; // Название продукта
+    price: number | null; // Цена продукта (может быть null)
+    description: string; // Описание продукта
+    category: string; // Категория продукта
+    image: string; // URL изображения продукта
 }
 
-export interface IOrder {
-  payment: string;
-  address: string;
-  email: string;
-  phone: string;
-  total: number;
-  items: IProduct[];
-}
+/**
+ * Класс AppState представляет состояние приложения, включая каталог продуктов,
+ * корзину и информацию о заказе. Он наследует функциональность от базового класса Model.
+ */
+export class AppState extends Model<IAppState> {
+  catalog: Product[]; // Массив продуктов в каталоге
+  basket: Product[] = []; // Массив продуктов в корзине (по умолчанию пустой)
+  order: IOrder = { // Объект заказа с начальными значениями
+    payment: 'online', // Способ оплаты
+    address: '', // Адрес доставки
+    email: '', // Email клиента
+    phone: '', // Телефон клиента
+    total: 0, // Общая сумма заказа
+    items: [] // Массив товаров в заказе
+  };
+  preview: string | null; // ID предварительного просмотра продукта (может быть null)
+  formErrors: FormErrors = {}; // Объект для хранения ошибок валидации формы
 
-export interface IAppState {
-  catalog: IProduct[];
-  basket: IProduct[];
-  order: IOrder;
-  preview: string | null;
-  formErrors: Record<string, string>;
-}
-
-export interface IEvents {
-  // Определите вашу архитектуру событий здесь
-}
-
-// Базовый класс Model
-export class Model<T> {
-  protected state: T;
-  protected eventSystem: IEvents;
-
-  constructor(initialData: Partial<T>, eventSystem: IEvents) {
-      this.state = { ...initialData } as T;
-      this.eventSystem = eventSystem;
+  /**
+   * Метод для очистки корзины.
+   */
+  clearBasket() {
+    this.basket = []; // Обнуляем корзину
+    this.updateBasket(); // Обновляем состояние корзины
   }
 
-  public emitChanges(eventName: string, data: any) {
-      // Логика эмитирования изменений
-      console.log(eventName, data);
-  }
-}
-
-// Класс Product, реализующий интерфейс IProduct
-class Product implements IProduct {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  image: string;
-  price: number;
-
-  constructor(data: IProduct) {
-      this.id = data.id;
-      this.title = data.title;
-      this.description = data.description;
-      this.category = data.category;
-      this.image = data.image;
-      this.price = data.price;
-  }
-}
-
-// Класс AppData управляет состоянием приложения
-export class AppData extends Model<IAppState> {
-  constructor(initialData: Partial<IAppState>, eventSystem: IEvents) {
-      const defaultState: IAppState = {
-          catalog: [],
-          basket: [],
-          order: {
-              payment: 'online',
-              address: '',
-              email: '',
-              phone: '',
-              total: 0,
-              items: []
-          },
-          preview: null,
-          formErrors: {}
-      };
-
-      super({ ...defaultState, ...initialData }, eventSystem);
+  /**
+   * Метод для очистки заказа, сбрасывает все значения к начальным.
+   */
+  clearOrder() {
+    this.order = {
+      payment: 'online', // Сброс способа оплаты на онлайн
+      address: '', // Сброс адреса
+      email: '', // Сброс email
+      phone: '', // Сброс телефона
+      total: 0, // Сброс общей суммы
+      items: [] // Сброс списка товаров заказа
+    };
   }
 
-  // Устанавливает каталог продуктов
+  /**
+   * Метод для установки каталога продуктов и генерации события об изменении.
+   * @param items - массив продуктов для каталога
+   */
   setCatalog(items: IProduct[]) {
-      this.state.catalog = items.map(item => new Product(item));
-      this.emitChanges('catalog:changed', { catalog: this.state.catalog });
+    this.catalog = items.map(item => new Product(item, this.events)); // Преобразуем массив IProduct в массив объектов Product
+    this.emitChanges('items:changed', { catalog: this.catalog }); // Генерируем событие об изменении каталога
   }
 
-  // Устанавливает предварительный просмотр выбранного продукта
-  setPreview(item: IProduct) {
-      this.state.preview = item.id;
-      this.emitChanges('preview:changed', item);
+  /**
+   * Метод для установки предварительного просмотра выбранного продукта.
+   * @param item - продукт для предварительного просмотра
+   */
+  setPreview(item: Product) {
+    this.preview = item.id; // Устанавливаем ID продукта для предварительного просмотра
+    this.emitChanges('preview:changed', item); // Генерируем событие об изменении предварительного просмотра
   }
 
-  // Обновляет состояние корзины
+  /**
+   * Метод для обновления состояния корзины и генерации соответствующих событий.
+   */
   updateBasket() {
-      this.emitChanges('basket:changed', this.state.basket);
+    this.emitChanges('counter:changed', this.basket); // Генерация события об изменении счетчика продуктов в корзине
+    this.emitChanges('basket:changed', this.basket); // Генерация события об изменении состояния корзины
   }
 
-  // Добавляет продукт в корзину
-  addToBasket(item: IProduct) {
-      if (!this.state.basket.includes(item)) {
-          this.state.basket.push(item);
-          this.updateBasket();
-      }
+  /**
+   * Метод для добавления продукта в корзину.
+   * @param item - продукт, который нужно добавить
+   */
+  addToBasket(item: Product) {
+    if (this.basket.indexOf(item) < 0) { // Проверяем, есть ли продукт уже в корзине
+      this.basket.push(item); // Добавляем продукт в корзину
+      this.updateBasket(); // Обновляем состояние корзины
+    }
   }
 
-  // Удаляет продукт из корзины
-  removeFromBasket(item: IProduct) {
-      this.state.basket = this.state.basket.filter(it => it !== item);
-      this.updateBasket();
+  /**
+   * Метод для удаления продукта из корзины.
+   * @param item - продукт, который нужно удалить
+   */
+  removeFromBasket(item: Product) {
+    this.basket = this.basket.filter((it) => it != item); // Фильтруем корзину, удаляя указанный продукт
+    this.updateBasket(); // Обновляем состояние корзины
   }
 
-  // Устанавливает поле доставки
-  setDeliveryField(field: keyof IOrder, value: string) {
-      this.state.order[field] = value;
-      if (this.validateDelivery()) {
-          this.emitChanges('delivery:ready', this.state.order);
-      }
+  /**
+   * Метод для установки значения поля доставки в заказе.
+   * @param field - поле, которое нужно установить
+   * @param value - новое значение для поля
+   */
+  setDeliveryField(field: keyof IDelivery, value: string) {
+    this.order[field] = value; // Устанавливаем новое значение для заданного поля доставки
+    if (this.validateDelivery()) { // Если валидация прошла успешно
+      this.events.emit('delivery:ready', this.order); // Генерируем событие о готовности доставки
+    }
   }
 
-  // Устанавливает поле контакта
-  setContactField(field: keyof IOrder, value: string) {
-      this.state.order[field] = value;
-      if (this.validateContact()) {
-          this.emitChanges('contact:ready', this.state.order);
-      }
+  /**
+   * Метод для установки значения поля контакта в заказе.
+   * @param field - поле, которое нужно установить
+   * @param value - новое значение для поля
+   */
+  setContactField(field: keyof IContact, value: string) {
+    this.order[field] = value; // Устанавливаем новое значение для заданного поля контакта
+    if (this.validateContact()) { // Если валидация прошла успешно
+      this.events.emit('contact:ready', this.order); // Генерируем событие о готовности контакта
+    }
   }
 
-  // Валидация данных доставки
+  /**
+   * Метод для валидации полей доставки.
+   * @returns true, если поля валидны, иначе false
+   */
   validateDelivery() {
-      const errors: Record<string, string> = {};
-      if (!this.state.order.address) {
-          errors.address = "Необходимо указать адрес";
-      }
-      this.state.formErrors = errors;
-      this.emitChanges('formErrors:change', this.state.formErrors);
-      return Object.keys(errors).length === 0;
+    const errors: typeof this.formErrors = {}; // Создаем объект для хранения ошибок
+    if (!this.order.address) { // Проверяем, заполнено ли поле адреса
+      errors.address = "Необходимо указать адрес"; // Если нет, добавляем ошибку
+    }
+    this.formErrors = errors; // Обновляем объект ошибок
+    this.events.emit('formErrors:change', this.formErrors); // Генерируем событие об изменении ошибок
+    return Object.keys(errors).length === 0; // Возвращаем true, если нет ошибок
   }
 
-  // Валидация контактных данных
+  /**
+   * Метод для валидации полей контакта.
+   * @returns true, если поля валидны, иначе false
+   */
   validateContact() {
-      const errors: Record<string, string> = {};
-      if (!this.state.order.email) {
-          errors.email = 'Необходимо указать email';
-      }
-      if (!this.state.order.phone) {
-          errors.phone = 'Необходимо указать телефон';
-      }
-      this.state.formErrors = errors;
-      this.emitChanges('formErrors:change', this.state.formErrors);
-      return Object.keys(errors).length === 0;
+    const errors: typeof this.formErrors = {}; // Создаем объект для хранения ошибок
+    if (!this.order.email) { // Проверяем, заполнено ли поле email
+      errors.email = 'Необходимо указать email'; // Если нет, добавляем ошибку
+    }
+    if (!this.order.phone) { // Проверяем, заполнено ли поле телефона
+      errors.phone = 'Необходимо указать телефон'; // Если нет, добавляем ошибку
+    }
+    this.formErrors = errors; // Обновляем объект ошибок
+    this.events.emit('formErrors:change', this.formErrors); // Генерируем событие об изменении ошибок
+    return Object.keys(errors).length === 0; // Возвращаем true, если нет ошибок
   }
 }

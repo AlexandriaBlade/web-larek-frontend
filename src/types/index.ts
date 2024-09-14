@@ -1,142 +1,140 @@
-// Тип для ответа API, который содержит общее количество элементов и массив элементов указанного типа
+// Тип для представления ответа от API, содержащий общее количество и массив элементов определенного типа
 export type ApiListResponse<Type> = {
-  total: number; // Общее количество элементов
-  items: Type[]; // Массив элементов типа Type
+  total: number,           // Общее количество элементов
+  items: Type[]           // Массив элементов указанного типа
 };
 
-// Типы методов HTTP, поддерживаемые API
+// Типы HTTP методов для POST запросов
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
-// Тип для названия события, может быть строкой или регулярным выражением
+// Тип для названия события, которое может быть строкой или регулярным выражением
 export type EventName = string | RegExp;
-
-// Определение функции-подписчика события
+// Тип для подписчика события (функция)
 export type Subscriber = Function;
-
-// Формат события эмиттера, включая название события и данные
+// Тип для события эмиттера, включая имя события и данные
 export type EmitterEvent = {
-  eventName: string; // Название события
-  data: unknown; // Данные, ассоциированные с событием
+  eventName: string,      // Имя события
+  data: unknown           // Данные, передаваемые с событием
 };
 
-// Интерфейс для системы событий с методами для подписки, эмитации и триггеринга событий
+// Интерфейс, описывающий систему событий с методами для подписки, эмита и триггера событий
 export interface IEvents {
   on<T extends object>(event: EventName, callback: (data: T) => void): void; // Подписка на событие
-  emit<T extends object>(event: string, data?: T): void; // Эмитирование события
-  trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void; // Триггер события
+  emit<T extends object>(event: string, data?: T): void;                    // Эмитирование события
+  trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void; // Триггер события с данными
 }
 
-// Интерфейс для состояния формы с флагом валидности и массивом ошибок
+// Интерфейс для состояния формы, указывающий, действительна ли форма и массив ошибок
 export interface IFormState {
-  valid: boolean; // Является ли форма валидной
-  errors: string[]; // Массив ошибок формы
+  valid: boolean;         // Статус валидности формы
+  errors: string[];      // Массив ошибок валидации
 }
 
 // Интерфейс для данных модального окна
 export interface IModalData {
-  content: HTMLElement; // Содержимое модального окна
+  content: HTMLElement;   // Контент модального окна
 }
 
-// Интерфейс для API веб-магазина с методами для получения продуктов и оформления заказов
+// Интерфейс для взаимодействия с API приложения WebLarek
 export interface IWebLarekAPI {
-  getProductList: () => Promise<IProduct[]>; // Получить список продуктов
-  getProductItem: (id: string) => Promise<IProduct>; // Получить конкретный продукт по ID
-  orderProducts: (order: IOrder) => Promise<IOrderResult>; // Оформить заказ
+  getProductList: () => Promise<IProduct[]>; // Получение списка продуктов
+  getProductItem: (id: string) => Promise<IProduct>; // Получение одного продукта по ID
+  orderProducts: (order: IOrder) => Promise<IOrderResult>; // Размещение заказа
 }
 
 // Интерфейс для результата заказа
 export interface IOrderResult {
-  id: string; // ID заказа
-  total: number | null; // Общая сумма заказа
+  id: string;           // Идентификатор заказа
+  total: number | null; // Общая сумма заказа или null
 }
 
-// Интерфейс для продукта с основными характеристиками
+// Интерфейс продукта с его свойствами
 export interface IProduct {
-  id: string; // ID продукта
-  title: string; // Название продукта
+  id: string;          // Идентификатор продукта
+  title: string;       // Название продукта
   description: string; // Описание продукта
-  price: number | null; // Цена продукта
-  category: string; // Категория продукта
-  image: string; // URL изображения продукта
+  price: number | null; // Цена продукта или null
+  category: string;    // Категория продукта
+  image: string;       // Ссылка на изображение продукта
 }
 
-// Интерфейс для состояния приложения, включает в себя каталог, корзину, заказы и формы
+// Интерфейс состояния приложения, содержащий различные состояния и формы
 export interface IAppState {
-  catalog: IProduct[]; // Массив продуктов в каталоге
-  basket: IProduct[]; // Массив продуктов в корзине
-  order: IOrder | null; // Заказ (если есть)
-  preview: string | null; // Предварительный просмотр
-  orderForm: IOrderForm | null; // Форма заказа
-  contactForm: IContact | null; // Контактная форма
-  formErrors: FormErrors; // Ошибки формы
+  catalog: IProduct[];      // Список продуктов в каталоге
+  basket: IProduct[];       // Список продуктов в корзине
+  order: IOrder | null;     // Заказ или null, если нет заказа
+  preview: string | null;    // Предварительный просмотр или null
+  orderForm: IOrderForm | null; // Форма заказа или null
+  contactForm: IContact | null; // Контактная форма или null
+  formErrors: FormErrors;    // Ошибки формы
 }
 
-// Интерфейс для заказа, включает данные формы и контактные данные
+// Интерфейс для описания заказа, который включает в себя информацию о форме заказа и контактные данные
 export interface IOrder extends IOrderForm, IContact {
-  total: number | null; // Общая сумма заказа
-  items: string[]; // Массив ID продуктов в заказе
+  total: number | null;    // Общая стоимость заказа или null
+  items: string[];         // Массив идентификаторов продуктов в заказе
 }
 
-// Интерфейс для данных заказа
+// Интерфейс для формы заказа
 export interface IOrderForm {
-  payment: string; // Способ оплаты
-  address: string; // Адрес доставки
+  payment: string;         // Способ оплаты
+  address: string;        // Адрес доставки
 }
 
-// Интерфейс для контактных данных
+// Интерфейс для контактной информации
 export interface IContact {
-  email: string; // Электронная почта
-  phone: string; // Телефон
+  email: string;          // Электронная почта
+  phone: string;          // Телефон
 }
 
-// Интерфейс для данных о доставке
+// Интерфейс для доставки
 export interface IDelivery {
-  payment: string; // Способ оплаты
-  address: string; // Адрес доставки
+  payment: string;        // Метод оплаты
+  address: string;        // Адрес доставки
 }
 
-// Интерфейс для обработки ошибок формы
+// Интерфейс для ошибок формы
 export interface FormErrors {
-  address?: string; // Ошибка адреса (если есть)
-  email?: string; // Ошибка электронной почты (если есть)
-  phone?: string; // Ошибка телефона (если есть)
+  address?: string;       // Ошибки по адресу
+  email?: string;         // Ошибки по электронной почте
+  phone?: string;         // Ошибки по телефону
 }
 
-// Интерфейс для страницы с данными о счетчике и каталоге
+// Интерфейс для страницы, содержащий счетчик и каталог элементов
 export interface IPage {
-  counter: number; // Счетчик элементов на странице
-  catalog: HTMLElement[]; // Массив элементов каталога
+  counter: number;        // Счетчик
+  catalog: HTMLElement[];  // Массив HTML-элементов
 }
 
-// Интерфейс для состояния формы с флагом валидности и массивом ошибок
+// Интерфейс для состояния формы
 export interface IFormState {
-  valid: boolean; // Является ли форма валидной
-  errors: string[]; // Массив ошибок формы
+  valid: boolean;         // Статус валидности формы
+  errors: string[];      // Массив ошибок валидации
 }
 
-// Интерфейс для действий, связанных с кликами
+// Интерфейс для описания действий на клики
 export interface IActions {
-  onClick: (event: MouseEvent) => void; // Обработчик клика с событием мыши
+  onClick: (event: MouseEvent) => void; // Обработчик клика
 }
 
 // Интерфейс для карточки продукта с дополнительными свойствами
 export interface ICard extends IProduct {
-  index?: string; // Индекс карточки (если есть)
-  buttonTitle?: string; // Название кнопки (если есть)
+  index?: string;        // Индекс карточки (необязательное свойство)
+  buttonTitle?: string;  // Название кнопки (необязательное свойство)
 }
 
-// Интерфейс для представления корзины
+// Интерфейс для представления содержания корзины
 export interface IBasketView {
-  items: HTMLElement[]; // Массив элементов в корзине
-  total: number; // Общая сумма в корзине
+  items: HTMLElement[];   // Элементы для отображения в корзине
+  total: number;         // Общая стоимость товаров в корзине
 }
 
-// Интерфейс для успешного результата с общей суммой
+// Интерфейс для представления успешной операции
 export interface ISuccess {
-  total: number; // Общая сумма
+  total: number;         // Общая сумма успешной операции
 }
 
-// Интерфейс для действий при успешном результате
+// Интерфейс для действий успешной операции
 export interface ISuccessActions {
-  onClick: () => void; // Обработчик клика для успешного события
+  onClick: () => void;   // Обработчик клика для успешной операции
 }

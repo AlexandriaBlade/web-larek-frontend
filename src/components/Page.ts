@@ -1,47 +1,46 @@
-import { BaseComponent } from "./base/Component"; // Исправленный импорт
-import { IEvents, IPage } from "../types"; // Импорт интерфейсов событий и страницы
-import { ensureElement } from "../utils/utils"; // Импорт утилиты для проверки наличия элементов
+import { Component } from "./base/Component"; // Импорт базового класса Component для создания компонентов страницы
+import { IEvents, IPage } from "../types"; // Импорт интерфейсов для событий и страницы
+import { ensureElement } from "../utils/utils"; // Импорт функции для безопасной выборки элемента из DOM
 
-// Класс Page наследуется от BaseComponent и представляет собой страницу
-export class Page extends BaseComponent<IPage> {
-  // Элементы, представляющие различные части страницы
-  protected _counter: HTMLElement; // Счетчик корзины
-  protected _catalog: HTMLElement; // Каталог товаров
-  protected _wrapper: HTMLElement; // Обертка для страницы
-  protected _basket: HTMLElement; // Корзина
+// Класс Page, представляющий собой страницу в приложении, наследуется от класса Component с параметром IPage
+export class Page extends Component<IPage> {
+  protected _counter: HTMLElement; // Элемент счетчика в корзине
+  protected _catalog: HTMLElement; // Элемент для отображения каталога товаров
+  protected _wrapper: HTMLElement; // Обертка страницы
+  protected _basket: HTMLElement; // Элемент для корзины
 
-  // Конструктор класса, принимает контейнер и события
+  // Конструктор класса Page, принимает контейнер элемента и события
   constructor(container: HTMLElement, protected events: IEvents) {
-    super(container); // Вызываем конструктор родительского класса
+    super(container); // Вызов конструктора родительского класса Component
 
-    // Получаем ссылки на необходимые элементы страницы
-    this._counter = ensureElement<HTMLElement>('.header__basket-counter'); // Счетчик корзины в шапке
-    this._catalog = ensureElement<HTMLElement>('.gallery'); // Галерея товаров
-    this._wrapper = ensureElement<HTMLElement>('.page__wrapper'); // Обертка страницы
-    this._basket = ensureElement<HTMLElement>('.header__basket'); // Корзина в шапке
+    // Получение и инициализация элементов DOM с помощью функции ensureElement
+    this._counter = ensureElement<HTMLElement>('.header__basket-counter');
+    this._catalog = ensureElement<HTMLElement>('.gallery');
+    this._wrapper = ensureElement<HTMLElement>('.page__wrapper');
+    this._basket = ensureElement<HTMLElement>('.header__basket');
 
-    // Добавляем обработчик события для открытия корзины при клике на элемент корзины
+    // Добавление обработчика клика на элемент корзины, который генерирует событие 'basket:open'
     this._basket.addEventListener('click', () => {
-      this.events.emit('basket:open'); // Генерируем событие открытия корзины
+      this.events.emit('basket:open');
     });
   }
 
-  // Сеттер для обновления значения счетчика
+  // Установка значения счетчика в корзине
   set counter(value: number) {
-    this.updateText(this._counter, String(value)); // Устанавливаем текст счетчика
+    this.setText(this._counter, String(value)); // Присвоение текстового значения счетчику
   }
 
-  // Сеттер для обновления содержимого каталога
+  // Установка элементов каталога, заменяет все дочерние элементы каталога новыми элементами
   set catalog(items: HTMLElement[]) {
-    this._catalog.replaceChildren(...items); // Заменяем существующие элементы каталога на новые
+    this._catalog.replaceChildren(...items); // Замена содержимого элемента каталога новыми элементами
   }
 
-  // Сеттер для блокировки страницы
+  // Установка состояния блокировки страницы, добавляет или удаляет класс блокировки
   set locked(value: boolean) {
     if (value) {
-      this._wrapper.classList.add('page__wrapper_locked'); // Добавляем класс блокировки
+        this._wrapper.classList.add('page__wrapper_locked'); // Добавление класса блокировки
     } else {
-      this._wrapper.classList.remove('page__wrapper_locked'); // Убираем класс блокировки
+        this._wrapper.classList.remove('page__wrapper_locked'); // Удаление класса блокировки
     }
   }
 }

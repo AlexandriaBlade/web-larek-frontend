@@ -1,146 +1,145 @@
-// Преобразует строку в формате PascalCase в формат kebab-case
+// Функция для преобразования строки из формата PascalCase в kebab-case
 export function pascalToKebab(value: string): string {
-    return value.replace(/([a-z0–9])([A-Z])/g, "$1-$2").toLowerCase(); // Заменяет заглавные буквы на строчные, разделяя их дефисами
+    return value.replace(/([a-z0–9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-// Проверяет, является ли переданный аргумент строкой и содержит более одного символа
+// Функция для проверки, является ли переданный аргумент строкой,
+// и длиннее ли он одного символа
 export function isSelector(x: any): x is string {
     return (typeof x === "string") && x.length > 1;
 }
 
-// Проверяет, является ли значение пустым (null или undefined)
+// Функция для проверки, является ли значение пустым (null или undefined)
 export function isEmpty(value: any): boolean {
     return value === null || value === undefined;
 }
 
-// Тип, представляющий коллекцию селекторов
+// Тип для коллекции селекторов, которая может быть строкой, NodeList или массивом типа T
 export type SelectorCollection<T> = string | NodeListOf<Element> | T[];
 
-// Получает все элементы, соответствующие селектору, из заданного контекста
+// Функция для обеспечения получения всех элементов по заданному селектору,
+// возвращая массив элементов типа T
 export function ensureAllElements<T extends HTMLElement>(selectorElement: SelectorCollection<T>, context: HTMLElement = document as unknown as HTMLElement): T[] {
     if (isSelector(selectorElement)) {
-        return Array.from(context.querySelectorAll(selectorElement)) as T[]; // Получаем элементы по селектору
+        return Array.from(context.querySelectorAll(selectorElement)) as T[];
     }
     if (selectorElement instanceof NodeList) {
-        return Array.from(selectorElement) as T[]; // Преобразуем NodeList в массив
+        return Array.from(selectorElement) as T[];
     }
     if (Array.isArray(selectorElement)) {
-        return selectorElement; // Возвращаем массив элементов
+        return selectorElement;
     }
-    throw new Error(`Unknown selector element`); // Ошибка, если тип селектора неизвестен
+    throw new Error(`Unknown selector element`);
 }
 
-// Тип, представляющий элемент селектора (строка или экземпляр типа T)
+// Тип для представления элемента селектора, который может быть строкой или типом T
 export type SelectorElement<T> = T | string;
 
-// Убедитесь, что селектор всегда возвращает один элемент
+// Функция для обеспечения получения одного элемента по заданному селектору,
+// возвращает элемент типа T
 export function ensureElement<T extends HTMLElement>(selectorElement: SelectorElement<T>, context?: HTMLElement): T {
     if (isSelector(selectorElement)) {
-        const elements = ensureAllElements<T>(selectorElement, context); // Получаем все элементы по селектору
+        const elements = ensureAllElements<T>(selectorElement, context);
         if (elements.length > 1) {
-            console.warn(`selector ${selectorElement} returned more than one element`); // Предупреждение, если найдено больше одного элемента
+            console.warn(`selector ${selectorElement} returns more than one element`);
         }
         if (elements.length === 0) {
-            throw new Error(`selector ${selectorElement} returned nothing`); // Ошибка, если не найдено ни одного элемента
+            throw new Error(`selector ${selectorElement} returns nothing`);
         }
-        return elements.pop() as T; // Возвращаем последний найденный элемент
+        return elements.pop() as T;
     }
     if (selectorElement instanceof HTMLElement) {
-        return selectorElement as T; // Возвращаем элемент, если это уже HTMLElement
+        return selectorElement as T;
     }
-    throw new Error('Unknown selector element'); // Ошибка, если тип селектора неизвестен
+    throw new Error('Unknown selector element');
 }
 
-// Клонирует HTML-шаблон и возвращает его как элемент определённого типа
+// Функция для клонирования элемента шаблона
 export function cloneTemplate<T extends HTMLElement>(query: string | HTMLTemplateElement): T {
-    const template = ensureElement(query) as HTMLTemplateElement; // Получаем шаблон
-    return template.content.firstElementChild.cloneNode(true) as T; // Клонируем и возвращаем элемент
+    const template = ensureElement(query) as HTMLTemplateElement;
+    return template.content.firstElementChild.cloneNode(true) as T;
 }
 
-// Функция для генерации имен классов по БЭМ-методу
+// Функция для создания имен классов в формате БЭМ (BEM)
 export function bem(block: string, element?: string, modifier?: string): { name: string, class: string } {
-    let name = block; // Начинаем с имени блока
-    if (element) name += `__${element}`; // Добавляем элемент, если он есть
-    if (modifier) name += `_${modifier}`; // Добавляем модификатор, если он есть
+    let name = block;
+    if (element) name += `__${element}`;
+    if (modifier) name += `_${modifier}`;
     return {
         name,
-        class: `.${name}` // Возвращаем объект с именем и классом
+        class: `.${name}`
     };
 }
 
-// Получает все свойства объекта с опциональным фильтром
+// Функция для получения наименований свойств объекта с применением фильтра
 export function getObjectProperties(obj: object, filter?: (name: string, prop: PropertyDescriptor) => boolean): string[] {
     return Object.entries(
         Object.getOwnPropertyDescriptors(
-            Object.getPrototypeOf(obj) // Получаем дескрипторы свойств прототипа объекта
+            Object.getPrototypeOf(obj)
         )
     )
-        .filter(([name, prop]: [string, PropertyDescriptor]) => filter ? filter(name, prop) : (name !== 'constructor')) // Применяем фильтр
-        .map(([name, prop]) => name); // Возвращаем только имена свойств
+        .filter(([name, prop]: [string, PropertyDescriptor]) => filter ? filter(name, prop) : (name !== 'constructor'))
+        .map(([name, prop]) => name);
 }
 
 /**
- * Устанавливает dataset атрибуты элемента.
+ * Устанавливает атрибуты data-* элемента
  */
 export function setElementData<T extends Record<string, unknown> | object>(el: HTMLElement, data: T) {
     for (const key in data) {
-        el.dataset[key] = String(data[key]); // Присваиваем значения dataset атрибутам элемента
+        el.dataset[key] = String(data[key]);
     }
 }
 
 /**
- * Получает типизированные данные из dataset атрибутов элемента.
+ * Получает типизированные данные из атрибутов data-* элемента
  */
 export function getElementData<T extends Record<string, unknown>>(el: HTMLElement, scheme: Record<string, Function>): T {
     const data: Partial<T> = {};
     for (const key in el.dataset) {
-        data[key as keyof T] = scheme[key](el.dataset[key]); // Применяем функцию преобразования к значению dataset
+        data[key as keyof T] = scheme[key](el.dataset[key]);
     }
-    return data as T; // Возвращаем данные в типизированном виде
+    return data as T;
 }
 
 /**
- * Проверка, является ли объект простым объектом.
+ * Проверка, является ли объект простым объектом
  */
 export function isPlainObject(obj: unknown): obj is object {
     const prototype = Object.getPrototypeOf(obj);
-    return  prototype === Object.getPrototypeOf({}) || // Проверяем, является ли прототип Object
-        prototype === null; // Или проверяем на null
+    return prototype === Object.getPrototypeOf({}) ||
+        prototype === null;
 }
 
-// Проверяем, является ли значение логическим типом
+// Функция проверки на тип boolean
 export function isBoolean(v: unknown): v is boolean {
-    return typeof v === 'boolean'; // Проверка типа
+    return typeof v === 'boolean';
 }
 
-/**
- * Фабрика DOM-элементов в простейшей реализации.
- * Здесь не учтено много факторов.
- * В интернете можно найти более полные реализации.
- */
+
 export function createElement<
     T extends HTMLElement
 >(
-    tagName: keyof HTMLElementTagNameMap, // Имя тега
-    props?: Partial<Record<keyof T, string | boolean | object>>, // Свойства элемента
-    children?: HTMLElement | HTMLElement[] // Дочерние элементы
+    tagName: keyof HTMLElementTagNameMap,
+    props?: Partial<Record<keyof T, string | boolean | object>>,
+    children?: HTMLElement | HTMLElement[]
 ): T {
-    const element = document.createElement(tagName) as T; // Создаем элемент
+    const element = document.createElement(tagName) as T;
     if (props) {
         for (const key in props) {
             const value = props[key];
             if (isPlainObject(value) && key === 'dataset') {
-                setElementData(element, value); // Если свойство - это объект для dataset, устанавливаем его
+                setElementData(element, value);
             } else {
                 // @ts-expect-error fix indexing later
-                element[key] = isBoolean(value) ? value : String(value); // Устанавливаем другие свойства
+                element[key] = isBoolean(value) ? value : String(value);
             }
         }
     }
     if (children) {
         for (const child of Array.isArray(children) ? children : [children]) {
-            element.append(child); // Добавляем дочерние элементы
+            element.append(child);
         }
     }
-    return element; // Возвращаем созданный элемент
+    return element;
 }

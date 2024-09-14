@@ -1,50 +1,37 @@
-import { Form } from "./common/Form";
-import { IDelivery, IActions } from "../types";
-import { IEvents } from "../types";
-import { ensureElement } from "../utils/utils";
+import { Form } from "./common/Form"; // Импорт базового класса Form для работы с формами
+import { IDelivery, IActions } from "../types"; // Импорт интерфейсов для доставки и действий
+import { IEvents } from "../types"; // Импорт интерфейса для событий
+import { ensureElement } from "../utils/utils"; // Импорт функции для безопасного выбора элемента
 
-// Класс Delivery наследуется от формы и представляет доставку
+// Класс Delivery, наследующий функциональность от класса Form с параметром IDelivery
 export class Delivery extends Form<IDelivery> {
-  // Кнопки для различных способов оплаты
-  private _cardButton: HTMLButtonElement;
-  private _cashButton: HTMLButtonElement;
+  protected _cardButton: HTMLButtonElement; // Кнопка для выбора оплаты картой
+  protected _cashButton: HTMLButtonElement; // Кнопка для выбора оплаты наличными
 
-  // Конструктор класса
+  // Конструктор класса Delivery, принимает контейнер формы, события и действия
   constructor(container: HTMLFormElement, events: IEvents, actions?: IActions) {
-    // Вызываем конструктор родительского класса
-    super(container, events);
+    super(container, events); // Вызов конструктора родительского класса Form
 
-    // Ищем кнопки в контейнере по селекторам
+    // Получение и инициализация кнопок оплаты
     this._cardButton = ensureElement<HTMLButtonElement>('button[name="card"]', this.container);
     this._cashButton = ensureElement<HTMLButtonElement>('button[name="cash"]', this.container);
-    
-    // Добавляем активный класс для кнопки карты по умолчанию
-    this._cardButton.classList.add('button_alt-active');
+    this._cardButton.classList.add('button_alt-active'); // Добавление стиля для активной кнопки карты
 
-    // Если переданы действия, добавляем обработчики событий на кнопки
+    // Привязка обработчиков событий нажатия к кнопкам, если указаны действия
     if (actions?.onClick) {
-      this.addEventListeners(actions.onClick);
+      this._cardButton.addEventListener('click', actions.onClick);
+      this._cashButton.addEventListener('click', actions.onClick);
     }
-  }
-
-  // Приватный метод для добавления обработчиков событий на кнопки
-  private addEventListeners(onClick: EventListener): void {
-    this._cardButton.addEventListener('click', onClick);
-    this._cashButton.addEventListener('click', onClick);
   }
 
   // Метод для переключения активного состояния кнопок
-  public toggleButtons(): void {
-    this._cardButton.classList.toggle('button_alt-active');
-    this._cashButton.classList.toggle('button_alt-active');
+  toggleButtons() {
+    this._cardButton.classList.toggle('button_alt-active'); // Переключение класса активности для кнопки карты
+    this._cashButton.classList.toggle('button_alt-active'); // Переключение класса активности для кнопки наличных
   }
 
-  // Сеттер для адреса доставки
-  public set address(value: string) {
-    // Находим элемент с именем 'address' и присваиваем ему значение
-    const addressInput = this.container.elements.namedItem('address') as HTMLInputElement;
-    if (addressInput) {
-      addressInput.value = value;
-    }
+  // Установка адреса в соответствующее поле формы
+  set address(value: string) {
+    (this.container.elements.namedItem('address') as HTMLInputElement).value = value; // Присваивание значения полю адреса
   }
 }

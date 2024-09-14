@@ -386,13 +386,13 @@ IActions - интерфейс для действий, которые можно
 
 **Свойства класса**:
 
-protected itemList: HTMLElement - список товаров в корзине;
+protected _list: HTMLElement - список товаров в корзине;
 
 
-protected totalAmount: HTMLElement - общая стоимость заказа;
+protected _total: HTMLElement - общая стоимость заказа;
 
 
-protected actionButton: HTMLButtonElement - кнопка перехода к оформлению заказа.
+protected _button: HTMLButtonElement - кнопка перехода к оформлению заказа.
 
 
 **Реализуемые методы**:
@@ -419,10 +419,10 @@ IBasketView - интерфейс структуры данных, использ
 
 **Свойства класса**:
 
-protected closeButton: HTMLElement; - кнокпа закрытия сообщения;
+protected _close: HTMLElement; - кнокпа закрытия сообщения;
 
 
-protected totalAmount: HTMLElement; - сообщение о деталях успешной операции.
+protected _total: HTMLElement; - сообщение о деталях успешной операции.
 
 
 **Реализуемые методы**:
