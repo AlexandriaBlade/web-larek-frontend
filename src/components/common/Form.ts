@@ -55,7 +55,7 @@ export class Form<T> extends Component<IFormState> {
      * @param value - если true, кнопка станет активной, если false - неактивной
      */
     set valid(value: boolean) {
-        this._submit.disabled = !value; // Устанавливаем состояние кнопки отправки
+        this.setDisabled(this._submit, !value); // Устанавливаем состояние кнопки отправки
     }
 
     /**

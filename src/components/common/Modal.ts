@@ -37,10 +37,18 @@ export class Modal extends Component<IModalData> {
     }
 
     /**
+     * Метод для установки текстового содержимого модального окна.
+     * @param text - текст, который нужно установить
+     */
+    setContentText(text: string) {
+        this.setText(this._content, text); // Используем метод setText для установки текстового содержимого
+    }
+
+    /**
      * Метод для открытия модального окна.
      */
     open() {
-        this.container.classList.add('modal_active'); // Добавляем класс для отображения модального окна
+        this.toggleClass(this.container, 'modal_active', true); // Используем toggleClass для добавления класса
         this.events.emit('modal:open'); // Генерируем событие открытия модального окна
     }
 
@@ -48,9 +56,17 @@ export class Modal extends Component<IModalData> {
      * Метод для закрытия модального окна.
      */
     close() {
-        this.container.classList.remove('modal_active'); // Удаляем класс, чтобы скрыть модальное окно
+        this.toggleClass(this.container, 'modal_active', false); // Используем toggleClass для удаления класса
         this.content = null; // Очищаем содержимое модального окна
         this.events.emit('modal:close'); // Генерируем событие закрытия модального окна
+    }
+
+    /**
+     * Метод для деактивации кнопки закрытия модального окна.
+     * @param state - если true, то кнопка будет заблокирована; если false, то разблокирована
+     */
+    setCloseButtonDisabled(state: boolean) {
+        this.setDisabled(this._closeButton, state); // Используем setDisabled для управления состоянием кнопки
     }
 
     /**

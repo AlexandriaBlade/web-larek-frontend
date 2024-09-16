@@ -1,6 +1,6 @@
-import { Component } from "../base/Component"; // Импорт базового компонента
-import { ensureElement } from "../../utils/utils"; // Импорт вспомогательной функции для получения элементов
-import { ISuccess, ISuccessActions } from "../../types"; // Импорт типов для успешного сообщения и действий
+import { Component } from "./base/Component"; // Импорт базового компонента
+import { ensureElement } from "../utils/utils"; // Импорт вспомогательной функции для получения элементов
+import { ISuccess, ISuccessActions } from "../types"; // Импорт типов для успешного сообщения и действий
 
 /**
  * Класс Success представляет собой компонент для отображения успешного сообщения о заказе.
@@ -33,6 +33,6 @@ export class Success extends Component<ISuccess> {
      * @param value - сумма, которая будет отображена
      */
     set total(value: string) {
-        this._total.textContent = `Списано ${value} синапсов`; // Обновляем текстовое содержание с использованием переданного значения
+        this.setText(this._total, `Списано ${value} синапсов`); // Используем setText для обновления текстового содержания
     }
 }

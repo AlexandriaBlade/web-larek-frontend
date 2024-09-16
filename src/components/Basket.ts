@@ -1,7 +1,7 @@
-import { Component } from "../base/Component";
-import { createElement, ensureElement } from "../../utils/utils";
-import { IBasketView } from "../../types";
-import { EventEmitter } from "../base/events";
+import { Component } from "./base/Component";
+import { createElement, ensureElement } from "../utils/utils";
+import { IBasketView } from "../types";
+import { EventEmitter } from "./base/events";
 
 /**
  * Класс Basket представляет корзину покупок и управляет её отображением.
@@ -33,7 +33,7 @@ export class Basket extends Component<IBasketView> {
         }
 
         this.items = []; // Инициализируем пустой массив для товаров в корзине
-        this._button.disabled = true; // Делаем кнопку неактивной по умолчанию
+        this.setDisabled(this._button, true); // Делаем кнопку неактивной по умолчанию
     }
 
     /**
@@ -46,9 +46,9 @@ export class Basket extends Component<IBasketView> {
             this._list.replaceChildren(...items);
         } else {
             // Если корзина пуста, отображаем текст о пустой корзине
-            this._list.replaceChildren(createElement<HTMLParagraphElement>('p', {
-                textContent: 'Корзина пуста' // Сообщение для отображения при пустой корзине
-            }));
+            const emptyMessage = createElement<HTMLParagraphElement>('p');
+            this.setText(emptyMessage, 'Корзина пуста');
+            this._list.replaceChildren(emptyMessage);
         }
     }
 
@@ -65,6 +65,6 @@ export class Basket extends Component<IBasketView> {
      * @param disabled - если true, кнопка будет неактивной, если false - активной
      */
     toggleButton(disabled: boolean) {
-        this._button.disabled = disabled; // Устанавливаем состояние кнопки
+        this.setDisabled(this._button, disabled); // Устанавливаем состояние кнопки
     }
 }

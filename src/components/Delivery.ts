@@ -15,7 +15,9 @@ export class Delivery extends Form<IDelivery> {
     // Получение и инициализация кнопок оплаты
     this._cardButton = ensureElement<HTMLButtonElement>('button[name="card"]', this.container);
     this._cashButton = ensureElement<HTMLButtonElement>('button[name="cash"]', this.container);
-    this._cardButton.classList.add('button_alt-active'); // Добавление стиля для активной кнопки карты
+
+    // Используем метод toggleClass вместо прямого добавления класса
+    this.toggleClass(this._cardButton, 'button_alt-active', true); // Устанавливаем начальное активное состояние для кнопки карты
 
     // Привязка обработчиков событий нажатия к кнопкам, если указаны действия
     if (actions?.onClick) {
@@ -26,12 +28,14 @@ export class Delivery extends Form<IDelivery> {
 
   // Метод для переключения активного состояния кнопок
   toggleButtons() {
-    this._cardButton.classList.toggle('button_alt-active'); // Переключение класса активности для кнопки карты
-    this._cashButton.classList.toggle('button_alt-active'); // Переключение класса активности для кнопки наличных
+    this.toggleClass(this._cardButton, 'button_alt-active'); // Переключение класса активности для кнопки карты
+    this.toggleClass(this._cashButton, 'button_alt-active'); // Переключение класса активности для кнопки наличных
   }
 
   // Установка адреса в соответствующее поле формы
   set address(value: string) {
-    (this.container.elements.namedItem('address') as HTMLInputElement).value = value; // Присваивание значения полю адреса
+    this.setText(this.container.elements.namedItem('address') as HTMLInputElement, value); // Используем setText для установки значения адреса
   }
 }
+
+

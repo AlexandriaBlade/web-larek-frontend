@@ -9,10 +9,10 @@ import {cloneTemplate, ensureElement} from "./utils/utils";
 import {Modal} from "./components/common/Modal";
 import {IContact, IDelivery, IOrder} from "./types";
 import { Card } from './components/Card';
-import { Basket } from './components/common/Basket';
+import { Basket } from './components/Basket';
 import { Delivery} from './components/Delivery';
 import { Contact } from './components/Contact';
-import { Success } from './components/common/Success';
+import { Success } from './components/Success';
 
 const events = new EventEmitter();
 const api = new WebLarekAPI(CDN_URL, API_URL);
